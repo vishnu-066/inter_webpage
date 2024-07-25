@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BST Traversals</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            background-color: #f0f0f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .container {
+            max-width: 600px;
+            width: 100%;
+            background-color: #fff;
+            padding: 50px 40px; /* Increased padding */
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            position: relative;
+            z-index: 1;
+            text-align: center;
+            margin: auto; /* Center horizontally */
+            margin-top: 10vh; /* Center vertically */
+        }
+
+        input[type="text"] {
+            padding: 8px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            margin-right: 10px;
+            width: 150px;
+        }
+
+        button {
+            padding: 12px 24px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            margin: 5px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        button:hover {
+            background-color: #45a049;
+            transform: scale(1.1);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        #result, #inorder, #preorder, #postorder {
+            margin-top: 10px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: #f9f9f9;
+            transition: background-color 0.3s ease;
+        }
+
+        #result:hover, #inorder:hover, #preorder:hover, #postorder:hover {
+            background-color: #e0e0e0;
+        }
+
+        /* Falling Bubbles */
+        @keyframes bubble {
+            0% {
+                opacity: 0;
+                transform: translateY(0) scale(0.5);
+            }
+            50% {
+                opacity: 1;
+                transform: translateY(calc(100vh - 200px)) scale(1);
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(100vh) scale(0.5);
+            }
+        }
+
+        .bubble {
+            position: absolute;
+            bottom: -50px;
+            width: 50px;
+            height: 50px;
+            background-color: rgba(0, 150, 255, 0.8);
+            border-radius: 50%;
+            opacity: 0;
+            animation: bubble 8s infinite;
+            z-index: 0;
+        }
+
+        .bubble:nth-child(1) {
+            left: 10%;
+            animation-duration: 7s;
+            animation-delay: 0s;
+            background-color: rgba(255, 99, 132, 0.8);
+        }
+
+        .bubble:nth-child(2) {
+            left: 20%;
+            animation-duration: 9s;
+            animation-delay: 1s;
+            background-color: rgba(54, 162, 235, 0.8);
+        }
+
+        .bubble:nth-child(3) {
+            left: 30%;
+            animation-duration: 8s;
+            animation-delay: 2s;
+            background-color: rgba(255, 206, 86, 0.8);
+        }
+
+        .bubble:nth-child(4) {
+            left: 40%;
+            animation-duration: 10s;
+            animation-delay: 3s;
+            background-color: rgba(75, 192, 192, 0.8);
+        }
+
+        .bubble:nth-child(5) {
+            left: 50%;
+            animation-duration: 7s;
+            animation-delay: 0.5s;
+            background-color: rgba(153, 102, 255, 0.8);
+        }
+
+        .bubble:nth-child(6) {
+            left: 60%;
+            animation-duration: 9s;
+            animation-delay: 1.5s;
+            background-color: rgba(255, 159, 64, 0.8);
+        }
+
+        .bubble:nth-child(7) {
+            left: 70%;
+            animation-duration: 8s;
+            animation-delay: 2.5s;
+            background-color: rgba(0, 150, 255, 0.8);
+        }
+
+        .bubble:nth-child(8) {
+            left: 80%;
+            animation-duration: 10s;
+            animation-delay: 3.5s;
+            background-color: rgba(0, 255, 150, 0.8);
+        }
+
+        .bubble:nth-child(9) {
+            left: 90%;
+            animation-duration: 9s;
+            animation-delay: 4.5s;
+            background-color: rgba(255, 99, 132, 0.8);
+        }
+
+        .bubble:nth-child(10) {
+            left: 95%;
+            animation-duration: 7s;
+            animation-delay: 1s;
+            background-color: rgba(54, 162, 235, 0.8);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 style="text-align: center;">Binary Search Tree Traversals</h1>
+        <div>
+            <input type="text" id="bst-input" placeholder="Enter value">
+            <button onclick="insertNode()">Insert</button>
+            <button onclick="deleteNode()">Delete</button>
+            <button onclick="searchNode()">Search</button>
+            <button onclick="displayTraversals()">Display Traversals</button>
+        </div>
+        <div id="result"></div>
+        <div id="inorder"></div>
+        <div id="preorder"></div>
+        <div id="postorder"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+    </div>
+
+    <script>
+        const resultDiv = document.getElementById('result');
+        const inorderDiv = document.getElementById('inorder');
+        const preorderDiv = document.getElementById('preorder');
+        const postorderDiv = document.getElementById('postorder');
+
+        class Node {
+            constructor(value) {
+                this.value = value;
+                this.left = null;
+                this.right = null;
+            }
+        }
+
+        class BST {
+            constructor() {
+                this.root = null;
+            }
+
+            insert(value) {
+                const newNode = new Node(value);
+                if (this.root === null) {
+                    this.root = newNode;
+                } else {
+                    this.insertNode(this.root, newNode);
+                }
+            }
+
+            insertNode(node, newNode) {
+                if (newNode.value < node.value) {
+                    if (node.left === null) {
+                        node.left = newNode;
+                    } else {
+                        this.insertNode(node.left, newNode);
+                    }
+                } else {
+                    if (node.right === null) {
+                        node.right = newNode;
+                    } else {
+                        this.insertNode(node.right, newNode);
+                    }
+                }
+            }
+
+            delete(value) {
+                this.root = this.deleteNode(this.root, value);
+            }
+
+            deleteNode(node, key) {
+                if (node === null) {
+                    return null;
+                }
+                if (key < node.value) {
+                    node.left = this.deleteNode(node.left, key);
+                    return node;
+                } else if (key > node.value) {
+                    node.right = this.deleteNode(node.right, key);
+                    return node;
+                } else {
+                    if (node.left === null && node.right === null) {
+                        node = null;
+                        return node;
+                    }
+                    if (node.left === null) {
+                        node = node.right;
+                        return node;
+                    } else if (node.right === null) {
+                        node = node.left;
+                        return node;
+                    }
+                    const aux = this.findMinNode(node.right);
+                    node.value = aux.value;
+                    node.right = this.deleteNode(node.right, aux.value);
+                    return node;
+                }
+            }
+
+            findMinNode(node) {
+                if (node.left === null) {
+                    return node;
+                } else {
+                    return this.findMinNode(node.left);
+                }
+            }
+
+            search(node, value) {
+                if (node === null) {
+                    return null;
+                } else if (value < node.value) {
+                    return this.search(node.left, value);
+                } else if (value > node.value) {
+                    return this.search(node.right, value);
+                } else {
+                    return node;
+                }
+            }
+
+            inorder(node, result = []) {
+                if (node !== null) {
+                    this.inorder(node.left, result);
+                    result.push(node.value);
+                    this.inorder(node.right, result);
+                }
+                return result;
+            }
+
+            preorder(node, result = []) {
+                if (node !== null) {
+                    result.push(node.value);
+                    this.preorder(node.left, result);
+                    this.preorder(node.right, result);
+                }
+                return result;
+            }
+
+            postorder(node, result = []) {
+                if (node !== null) {
+                    this.postorder(node.left, result);
+                    this.postorder(node.right, result);
+                    result.push(node.value);
+                }
+                return result;
+            }
+        }
+
+        const bst = new BST();
+
+        function insertNode() {
+            const value = document.getElementById('bst-input').value;
+            if (value === "") return;
+            bst.insert(parseInt(value));
+            resultDiv.innerHTML = `Inserted: ${value}`;
+            document.getElementById('bst-input').value = '';
+        }
+
+        function deleteNode() {
+            const value = document.getElementById('bst-input').value;
+            if (value === "") return;
+            bst.delete(parseInt(value));
+            resultDiv.innerHTML = `Deleted: ${value}`;
+            document.getElementById('bst-input').value = '';
+        }
+
+        function searchNode() {
+            const value = document.getElementById('bst-input').value;
+            if (value === "") return;
+            const found = bst.search(bst.root, parseInt(value)) !== null;
+            resultDiv.innerHTML = found ? `Found: ${value}` : `Not Found: ${value}`;
+            document.getElementById('bst-input').value = '';
+        }
+
+        function displayTraversals() {
+            inorderDiv.innerHTML = `Inorder: ${bst.inorder(bst.root).join(', ')}`;
+            preorderDiv.innerHTML = `Preorder: ${bst.preorder(bst.root).join(', ')}`;
+            postorderDiv.innerHTML = `Postorder: ${bst.postorder(bst.root).join(', ')}`;
+        }
+    </script>
+</body>
+</html>
